@@ -1,0 +1,111 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'schemas/css/style.css' %}">
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'schemas:index' %}">Fake CSV</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'schemas:create_schema' %}">
+                            Schemas
+                        </a>
+                    </li>
+                </ul>
+                <span class="navbar-text">
+                    Hello, {{ request.user.username }}
+                </span>
+                <a class="nav-link" href="#">Logout</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <script>
+        $("#id_type").on("click", () => {
+
+            if ($("#id_type").val() === "Integer") {
+                $("#hide3").attr({ "class": "col" });
+                $("#hide4").attr({ "class": "col" });
+            } else {
+                $("#hide3").attr({ "class": "col d-none" });
+                $("#hide4").attr({ "class": "col d-none" });
+            }
+        });
+
+        $("#createColumn").submit(function (e) {
+            const formData = $(this).serialize();
+
+            e.preventDefault();
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'schemas:create_column' %}",
+                data: formData,
+                success: (response) => {
+                    $("#createColumn").trigger('reset');
+                    
+                    let notShow;
+                    if (response.type === "Integer") {
+                        notShow = ""
+                    } else {
+                        notShow = "not-show"
+                    };
+
+                    $("#columnRows").append(
+                        `<form action="new_column/delete/${response.id}" method="POST">
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label  class="form-label">Column name</label>
+                                    <input type="text" class="form-control" readonly placeholder="${response.name}">
+                                </div>
+                                <div class="col">
+                                    <label  class="form-label">Type</label>
+                                    <input type="text" class="form-control" readonly placeholder="${response.type}">
+                                </div>
+                                <div class="col ${notShow}">
+                                    <label class="form-label">From</label>
+                                    <input type="text" class="form-control" readonly placeholder="${response.start}">
+                                </div>
+                                <div class="col ${notShow}">
+                                    <label class="form-label">To</label>
+                                    <input type="text" class="form-control" readonly placeholder="${response.end}">
+                                </div>
+                                <div class="col">
+                                    <button type="submit" class="btn btn-danger col-submit">Delete</button>
+                                </div>
+                            </div>
+                        </form>`
+                    );
+                },
+                error: (response) => {
+                    return false;
+                }
+            });
+        });
+    </script>
+    <!-- <script src="{% static 'schemas/js/index.js' %}"></script> -->
+</body>
+
+</html>

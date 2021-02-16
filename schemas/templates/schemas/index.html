@@ -1,0 +1,32 @@
+{% extends './base.html' %}
+
+
+{% block content %}
+<div class="mt-4">
+    <h3 class="d-inline">Data Schemas</h3>
+    <a class="btn btn-success d-inline float-end" href="{% url 'schemas:create_schema' %}" role="button">New schema</a>
+</div>
+<table class="table table-bordered text-center mt-5">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Title</th>
+            <th scope="col">Modified</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for schema in schemas %}
+            <tr>
+                <th class="align-middle" scope="row">{{ forloop.counter }}</th>
+                <td class="align-middle">{{ schema.name }}</td>
+                <td class="align-middle">{{ schema.modified }}</td>
+                <td>
+                    <a class="btn btn-primary" href="#" role="button">Edit schema</a>
+                    <a class="btn btn-danger ms-2" href="#" role="button">Delete</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

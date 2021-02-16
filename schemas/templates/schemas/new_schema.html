@@ -1,0 +1,83 @@
+{% extends './base.html' %}
+
+
+{% block content %}
+<div class="mt-3">
+    <h3>New Schema</h3>
+</div>
+<!-- SCHEMA CREATE FROM -->
+<div class="mt-4">
+    <form action="" method="post">
+        <div class="mb-3 float-end">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+        <div>
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+<!-- END SCHEMA CREATE FROM -->
+<div class="mt-4">
+    <h3>Schema Columns</h3>
+</div>
+<!-- SCHEMA COLUMNS -->
+<div id="columnRows" class="mt-4">
+    {% for column in columns %}
+    <form action="{% url 'schemas:delete_column' column.pk %}" method="POST">
+        <div class="row mb-3">
+            <div class="col">
+                <label class="form-label">Column name</label>
+                <input type="text" class="form-control" readonly placeholder="{{ column.name }}">
+            </div>
+            <div class="col">
+                <label class="form-label">Type</label>
+                <input type="text" class="form-control" readonly placeholder="{{ column.type }}">
+            </div>
+            <div class="col {% if column.type != 'Integer' %}not-show{% endif %}">
+                <label class="form-label">From</label>
+                <input type="text" class="form-control" readonly placeholder="{{ column.start }}">
+            </div>
+            <div class="col {% if column.type != 'Integer' %}not-show{% endif %}">
+                <label class="form-label">To</label>
+                <input type="text" class="form-control" readonly placeholder="{{ column.end }}">
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-danger col-submit">Delete</button>
+            </div>
+        </div>
+    </form>
+    {% endfor %}
+</div>
+<!-- END SCHEMA COLUMNS -->
+<!-- COLUMN CREATE FORM -->
+<div class="mt-4 mb-5">
+    <div class="border p-4">
+        <form method="post" class="form-inline" id="createColumn">
+            {% csrf_token %}
+            <div class="row">
+                {% for field in col_form %}
+                    {% if field.label in "StartEnd" %}
+                        <div class="col d-none" id="hide{{ forloop.counter }}">
+                    {% else %}
+                        <div class="col">
+                    {% endif %}
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="schema" value="{{ schema.pk }}">
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Add column</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- END COLUMN CREATE FORM -->
+
+{% endblock %}
