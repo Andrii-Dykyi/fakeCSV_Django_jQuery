@@ -28,7 +28,7 @@
 <!-- SCHEMA COLUMNS -->
 <div id="columnRows" class="mt-4">
     {% for column in columns %}
-    <form action="{% url 'schemas:delete_column' column.pk %}" method="POST">
+    <form class="columnRow" action="{% url 'schemas:delete_column' column.pk %}" method="GET">
         <div class="row mb-3">
             <div class="col">
                 <label class="form-label">Column name</label>

@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.views.generic import ListView, TemplateView, View
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,8 +20,7 @@ class CreateSchemaView(View):
     def get(self, request):
         schema, _ = Schema.objects.get_or_create(owner=request.user, confirmed=False)
         columns = schema.schemacolumn_set.all()
-        form = SchemaCreateForm(instance=schema)
-        col_form = SchemaColumnForm()
+        form, col_form = SchemaCreateForm(instance=schema), SchemaColumnForm()
         context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
         return render(request, 'schemas/new_schema.html', context)
 
@@ -38,7 +37,8 @@ class ColumnCreateView(APIView):
 
 class ColumnDeleteView(View):
 
-    def post(self, request, column_id):
-        column = SchemaColumn.objects.filter(id=column_id)
-        column.delete()
-        return redirect('schemas:create_schema')
+    def get(self, request, column_id):
+        if request.is_ajax() and request.user.is_authenticated:
+            column = SchemaColumn.objects.filter(id=column_id)
+            column.delete()
+            return JsonResponse({'success': column_id}, status=202)

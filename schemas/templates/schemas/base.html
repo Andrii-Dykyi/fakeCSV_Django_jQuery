@@ -32,7 +32,7 @@
                     </li>
                 </ul>
                 <span class="navbar-text">
-                    Hello, {{ request.user.username }}
+                    Hello, {{ user.username }}
                 </span>
                 <a class="nav-link" href="#">Logout</a>
             </div>
@@ -55,55 +55,69 @@
         });
 
         $("#createColumn").submit(function (e) {
-            const formData = $(this).serialize();
-
             e.preventDefault();
 
             $.ajax({
                 type: "POST",
                 url: "{% url 'schemas:create_column' %}",
-                data: formData,
-                success: (response) => {
-                    $("#createColumn").trigger('reset');
-                    
-                    let notShow;
-                    if (response.type === "Integer") {
-                        notShow = ""
-                    } else {
-                        notShow = "not-show"
-                    };
+                data: $(this).serialize()
+            })
+            .done((response) => {
+                $("#createColumn").trigger('reset');
+                
+                let notShow;
+                if (response.type === "Integer") {
+                    notShow = ""
+                } else {
+                    notShow = "not-show"
+                };
 
-                    $("#columnRows").append(
-                        `<form action="new_column/delete/${response.id}" method="POST">
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <label  class="form-label">Column name</label>
-                                    <input type="text" class="form-control" readonly placeholder="${response.name}">
-                                </div>
-                                <div class="col">
-                                    <label  class="form-label">Type</label>
-                                    <input type="text" class="form-control" readonly placeholder="${response.type}">
-                                </div>
-                                <div class="col ${notShow}">
-                                    <label class="form-label">From</label>
-                                    <input type="text" class="form-control" readonly placeholder="${response.start}">
-                                </div>
-                                <div class="col ${notShow}">
-                                    <label class="form-label">To</label>
-                                    <input type="text" class="form-control" readonly placeholder="${response.end}">
-                                </div>
-                                <div class="col">
-                                    <button type="submit" class="btn btn-danger col-submit">Delete</button>
-                                </div>
+                $("#columnRows").append(
+                    `<form class="columnRow" action="/new_column/delete/${response.id}/" method="GET">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label  class="form-label">Column name</label>
+                                <input type="text" class="form-control" readonly placeholder="${response.name}">
                             </div>
-                        </form>`
-                    );
-                },
-                error: (response) => {
-                    return false;
-                }
-            });
+                            <div class="col">
+                                <label  class="form-label">Type</label>
+                                <input type="text" class="form-control" readonly placeholder="${response.type}">
+                            </div>
+                            <div class="col ${notShow}">
+                                <label class="form-label">From</label>
+                                <input type="text" class="form-control" readonly placeholder="${response.start}">
+                            </div>
+                            <div class="col ${notShow}">
+                                <label class="form-label">To</label>
+                                <input type="text" class="form-control" readonly placeholder="${response.end}">
+                            </div>
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger col-submit">Delete</button>
+                            </div>
+                        </div>
+                    </form>`
+                );
+            })
+            .fail((err) => {
+                return false;
+            })
         });
+
+        $("#columnRows").on("submit", ".columnRow", function(e) {
+            e.preventDefault();
+            console.log("KEKEE");
+            $.ajax({
+                type: "GET",
+                url: `${this.action}`
+            })
+            .done((response) => {
+                $(this).remove();
+            })
+            .fail((err) => {
+                return false;
+            })
+        });
+
     </script>
     <!-- <script src="{% static 'schemas/js/index.js' %}"></script> -->
 </body>
