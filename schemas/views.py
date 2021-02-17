@@ -1,12 +1,12 @@
 from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.generic import ListView, TemplateView, View
+from django.shortcuts import redirect, render, get_object_or_404
+from django.views.generic import ListView, View
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .forms import SchemaColumnForm, SchemaCreateForm
-from .models import Schema, SchemaColumn
-from .serializers import SchemaColumnSerializer
+from .forms import ColumnCreateForm, SchemaCreateForm, DataSetCreateForm
+from .models import Schema, Column
+from .serializers import ColumnSerializer
 
 
 class IndexView(ListView):
@@ -18,11 +18,30 @@ class IndexView(ListView):
 class CreateSchemaView(View):
 
     def get(self, request):
-        schema, _ = Schema.objects.get_or_create(owner=request.user, confirmed=False)
-        columns = schema.schemacolumn_set.all()
-        form, col_form = SchemaCreateForm(instance=schema), SchemaColumnForm()
-        context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
-        return render(request, 'schemas/new_schema.html', context)
+        if request.user.is_authenticated:
+            schema, _ = Schema.objects.get_or_create(owner=request.user, confirmed=False)
+            columns = schema.column_set.all()
+            form, col_form = SchemaCreateForm(instance=schema), ColumnCreateForm()
+            context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
+            return render(request, 'schemas/new_schema.html', context)
+    
+    def post(self, request):
+        if request.user.is_authenticated:
+            form = SchemaCreateForm(data=request.POST)
+            if form.is_valid():
+                schema = form.save(commit=False)
+                schema.confirmed = True
+                schema.status = 'Processing'
+                schema.save()
+                return redirect('schemas:schema_detail')
+
+
+class SchemaView(View):
+
+    def get(self, request, schema_id):
+        schema = get_object_or_404(Schema, pk=schema_id)
+        form = DataSetCreateForm()
+        return render(request, 'schemas/schema_detail.html', {'schema': schema, 'form': form})
 
 
 class ColumnCreateView(APIView):

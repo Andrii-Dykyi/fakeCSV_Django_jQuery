@@ -1,0 +1,44 @@
+{% extends './base.html' %}
+
+
+{% block content %}
+<div class="mt-4">
+    <h3 class="d-inline">Data Sets</h3>
+    <form class="row float-end" action="" method="post">
+        <input type="hidden" name="schema" value="{{ schema.pk }}">
+        {% for field in form %}
+        <div class="col-auto">
+            <label for="{{ field.id_for_label }}" class="col-form-label">{{ field.label }}</label>
+        </div>
+            <div class="col-auto">
+                {{ field }}
+            {% endfor %}
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-success">Generate data</button>
+        </div>
+    </form>
+</div>
+<table class="table table-bordered text-center mt-5">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Created</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for schema in schemas %}
+            <tr>
+                <th class="align-middle" scope="row">{{ forloop.counter }}</th>
+                <td class="align-middle">{{ schema.created }}</td>
+                <td class="align-middle">{{ schema.status }}</td>
+                <td>
+                    <a class="btn btn-danger ms-2" href="#" role="button">Download</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

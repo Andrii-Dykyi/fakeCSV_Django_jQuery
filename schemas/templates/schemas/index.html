@@ -22,7 +22,7 @@
                 <td class="align-middle">{{ schema.name }}</td>
                 <td class="align-middle">{{ schema.modified }}</td>
                 <td>
-                    <a class="btn btn-primary" href="#" role="button">Edit schema</a>
+                    <a class="btn btn-primary ms-2 editButton" href="{{ schema.get_absolute_url }}" role="button">Edit</a>
                     <a class="btn btn-danger ms-2" href="#" role="button">Delete</a>
                 </td>
             </tr>

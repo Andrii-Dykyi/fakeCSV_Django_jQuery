@@ -5,3 +5,7 @@
 .not-show {
     visibility: hidden;
 }
+
+.editButton {
+    width: 75px;
+}

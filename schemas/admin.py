@@ -1,8 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Schema, SchemaColumn
+from .models import Schema, Column
 
 
 admin.site.register(Schema)
-admin.site.register(SchemaColumn)
+admin.site.register(Column)

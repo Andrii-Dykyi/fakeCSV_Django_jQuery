@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-from .models import SchemaColumn
+from .models import Column
 
 
-class SchemaColumnSerializer(serializers.ModelSerializer):
+class ColumnSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = SchemaColumn
+        model = Column
         fields = '__all__'

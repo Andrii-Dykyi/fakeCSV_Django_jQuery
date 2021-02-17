@@ -7,7 +7,8 @@
 </div>
 <!-- SCHEMA CREATE FROM -->
 <div class="mt-4">
-    <form action="" method="post">
+    <form action="{% url 'schemas:create_schema' %}" method="post">
+        {% csrf_token %}
         <div class="mb-3 float-end">
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
@@ -46,8 +47,8 @@
                 <label class="form-label">To</label>
                 <input type="text" class="form-control" readonly placeholder="{{ column.end }}">
             </div>
-            <div class="col">
-                <button type="submit" class="btn btn-danger col-submit">Delete</button>
+            <div class="col-1">
+                <button type="submit" class="btn btn-danger col-submit float-end">Delete</button>
             </div>
         </div>
     </form>
@@ -56,7 +57,7 @@
 <!-- END SCHEMA COLUMNS -->
 <!-- COLUMN CREATE FORM -->
 <div class="mt-4 mb-5">
-    <div class="border p-4">
+    <div class="border p-4 rounded-3">
         <form method="post" class="form-inline" id="createColumn">
             {% csrf_token %}
             <div class="row">
