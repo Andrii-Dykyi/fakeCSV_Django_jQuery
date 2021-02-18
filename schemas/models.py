@@ -4,16 +4,9 @@ from django.urls import reverse
 
 class Schema(models.Model):
     """Represent schema model in database."""
-    STATUS = (
-        ('Creating', 'Creating'),
-        ('Processing', 'Processing'),
-        ('Ready', 'Ready')
-    )
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100, null=True)
-    created = models.DateField(auto_now_add=True, null=True)
     modified = models.DateField(auto_now=True, null=True)
-    status = models.CharField(max_length=50, default='Creating', choices=STATUS)
     confirmed = models.BooleanField(default=False)
 
     class Meta:
@@ -23,7 +16,7 @@ class Schema(models.Model):
         return reverse('schemas:schema_detail', args=[str(self.id)])
 
     def __str__(self):
-        return f'{self.name} {self.num_row}'
+        return f'{self.name}'
 
 
 class Column(models.Model):
@@ -50,8 +43,14 @@ class Column(models.Model):
 
 class DataSet(models.Model):
     """Represent schema dataset in database."""
+    STATUS = (
+        ('Processing', 'Processing'),
+        ('Ready', 'Ready')
+    )
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE, null=True)
     num_row = models.SmallIntegerField()
+    status = models.CharField(max_length=50, default='Processing', choices=STATUS)
+    created = models.DateField(auto_now_add=True, null=True)
     file = models.FileField(upload_to='data_sets/', null=True)
 
     def __str__(self):

@@ -1,18 +1,20 @@
-from django.http import JsonResponse
-from django.shortcuts import redirect, render, get_object_or_404
-from django.views.generic import ListView, View
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.http import HttpResponseForbidden, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import View
 
-from .forms import ColumnCreateForm, SchemaCreateForm, DataSetCreateForm
-from .models import Schema, Column
-from .serializers import ColumnSerializer
+from .forms import ColumnCreateForm, DataSetCreateForm, SchemaCreateForm
+from .models import Column, DataSet, Schema
+from .tasks import form_fake_data
 
 
-class IndexView(ListView):
-    queryset = Schema.objects.filter(confirmed=True)
-    context_object_name = 'schemas'
-    template_name = 'schemas/index.html'
+class IndexView(View):
+    
+    def get(self, request):
+        if request.user.is_authenticated:
+            schemas = Schema.objects.filter(confirmed=True)
+            return render(request, 'schemas/index.html', {'schemas': schemas})
+        else:
+            return HttpResponseForbidden(status=403)
 
 
 class CreateSchemaView(View):
@@ -24,40 +26,72 @@ class CreateSchemaView(View):
             form, col_form = SchemaCreateForm(instance=schema), ColumnCreateForm()
             context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
             return render(request, 'schemas/new_schema.html', context)
+        else:
+            return HttpResponseForbidden(status=403)
     
     def post(self, request):
         if request.user.is_authenticated:
             form = SchemaCreateForm(data=request.POST)
             if form.is_valid():
-                schema = form.save(commit=False)
+                schema = Schema.objects.get(owner=request.user, confirmed=False)
+                schema.name = form.cleaned_data['name']
                 schema.confirmed = True
-                schema.status = 'Processing'
                 schema.save()
-                return redirect('schemas:schema_detail')
+                return redirect(schema)
+        else:
+            return HttpResponseForbidden(status=403)
 
 
 class SchemaView(View):
 
     def get(self, request, schema_id):
-        schema = get_object_or_404(Schema, pk=schema_id)
-        form = DataSetCreateForm()
-        return render(request, 'schemas/schema_detail.html', {'schema': schema, 'form': form})
+        if request.user.is_authenticated:
+            schema = get_object_or_404(Schema, pk=schema_id)
+            data_sets = schema.dataset_set.all()
+            form = DataSetCreateForm()
+            context = {'schema': schema, 'data_sets': data_sets, 'form': form}
+            return render(request, 'schemas/schema_detail.html', context)
+
+    def post(self, request, schema_id):
+        if request.is_ajax() and request.user.is_authenticated:
+            form = DataSetCreateForm(data=request.POST)
+            if form.is_valid():
+                data_set = DataSet.objects.create(
+                    schema_id=schema_id,
+                    num_row=request.POST.get('num_row')
+                )
+                task = form_fake_data.delay(schema_id) #TODO
+                return JsonResponse({'task_id': task.id}, status=202)
+        else:
+            return HttpResponseForbidden(status=403)
 
 
-class ColumnCreateView(APIView):
+class ColumnCreateView(View):
 
     def post(self, request):
         if request.is_ajax() and request.user.is_authenticated:
-            serializer = SchemaColumnSerializer(data=request.POST)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=200)
+            form = ColumnCreateForm(data=request.POST)
+            if form.is_valid():
+                column = form.save(commit=False)
+                column.schema_id = request.POST.get('schema')
+                column.save()
+                response = {
+                    'csrfmiddlewaretoken': request.POST.get('csrfmiddlewaretoken'),
+                    'id': column.pk,
+                    'name': column.name,
+                    'type': column.type,
+                    'start': column.start,
+                    'end': column.end
+                }
+                return JsonResponse(response, status=202)
+        else:
+            return HttpResponseForbidden(status=403)
 
 
 class ColumnDeleteView(View):
 
-    def get(self, request, column_id):
+    def post(self, request, column_id):
         if request.is_ajax() and request.user.is_authenticated:
-            column = SchemaColumn.objects.filter(id=column_id)
+            column = Column.objects.filter(id=column_id)
             column.delete()
             return JsonResponse({'success': column_id}, status=202)
