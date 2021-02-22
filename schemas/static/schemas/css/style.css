@@ -6,6 +6,10 @@
     visibility: hidden;
 }
 
-.editButton {
-    width: 75px;
+.actionButton {
+    width: 110px;
+}
+
+.taskStatus {
+    width: 110px;
 }

@@ -20,10 +20,10 @@
             <tr>
                 <th class="align-middle" scope="row">{{ forloop.counter }}</th>
                 <td class="align-middle">{{ schema.name }}</td>
-                <td class="align-middle">{{ schema.modified }}</td>
+                <td class="align-middle">{{ schema.modified|date:"Y-m-d" }}</td>
                 <td>
-                    <a class="btn btn-primary ms-2 editButton" href="{{ schema.get_absolute_url }}" role="button">Edit</a>
-                    <a class="btn btn-danger ms-2" href="#" role="button">Delete</a>
+                    <a class="btn btn-primary actionButton" href="{{ schema.get_absolute_url }}" role="button">Edit</a>
+                    <a class="btn btn-danger ms-2 actionButton" href="#" role="button">Delete</a>
                 </td>
             </tr>
         {% endfor %}
