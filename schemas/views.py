@@ -1,3 +1,4 @@
+from celery.result import AsyncResult
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import View
@@ -13,6 +14,7 @@ class IndexView(View):
         if request.user.is_authenticated:
             schemas = Schema.objects.filter(confirmed=True)
             return render(request, 'schemas/index.html', {'schemas': schemas})
+
         else:
             return HttpResponseForbidden(status=403)
 
@@ -26,6 +28,7 @@ class CreateSchemaView(View):
             form, col_form = SchemaCreateForm(instance=schema), ColumnCreateForm()
             context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
             return render(request, 'schemas/new_schema.html', context)
+
         else:
             return HttpResponseForbidden(status=403)
     
@@ -38,6 +41,7 @@ class CreateSchemaView(View):
                 schema.confirmed = True
                 schema.save()
                 return redirect(schema)
+
         else:
             return HttpResponseForbidden(status=403)
 
@@ -54,14 +58,25 @@ class SchemaView(View):
 
     def post(self, request, schema_id):
         if request.is_ajax() and request.user.is_authenticated:
+            schema = Schema.objects.get(id=schema_id)
             form = DataSetCreateForm(data=request.POST)
+
             if form.is_valid():
                 data_set = DataSet.objects.create(
                     schema_id=schema_id,
                     num_row=request.POST.get('num_row')
                 )
-                task = form_fake_data.delay(schema_id) #TODO
-                return JsonResponse({'task_id': task.id}, status=202)
+                task = form_fake_data.delay(schema_id, data_set.id)
+
+                response = {
+                    'task_id': task.id,
+                    'count': schema.dataset_set.count(),
+                    'created': data_set.created,
+                    'status': data_set.status
+                }
+
+                return JsonResponse(response, status=202)
+
         else:
             return HttpResponseForbidden(status=403)
 
@@ -84,6 +99,7 @@ class ColumnCreateView(View):
                     'end': column.end
                 }
                 return JsonResponse(response, status=202)
+
         else:
             return HttpResponseForbidden(status=403)
 
@@ -95,3 +111,18 @@ class ColumnDeleteView(View):
             column = Column.objects.filter(id=column_id)
             column.delete()
             return JsonResponse({'success': column_id}, status=202)
+
+
+class TaskStatusView(View):
+
+    def get(self, request, task_id):
+        if request.is_ajax() and request.user.is_authenticated:
+            task_result = AsyncResult(task_id)
+            result = {
+                "task_id": task_id,
+                "task_status": task_result.status
+            }
+            return JsonResponse(result, status=202)
+
+        else:
+            return HttpResponseForbidden(status=403)

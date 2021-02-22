@@ -1,9 +1,11 @@
 $("#id_type").on("click", () => {
     switch ($("#id_type").val()) {
+
         case "Integer":
             $("#hide3").attr({ "class": "col" });
             $("#hide4").attr({ "class": "col" });
             break;
+
         default:
             $("#hide3").attr({ "class": "col d-none" });
             $("#hide4").attr({ "class": "col d-none" });
@@ -23,9 +25,11 @@ $("#createColumn").submit(function (e) {
 
         let notShow;
         switch (response.type) {
+
             case "Integer":
                 notShow = "";
                 break
+
             default:
                 notShow = "not-show";
         }
@@ -80,7 +84,6 @@ $("#columnRows").on("submit", ".columnRow", function(e) {
     })
 });
 
-
 $("#dataSetCreate").submit(function (e) {
     e.preventDefault();
 
@@ -90,42 +93,63 @@ $("#dataSetCreate").submit(function (e) {
         data: $(this).serialize()
     })
     .done((response) => {
-        console.log(response);
+        $("#dataSetSubmit").prop("disabled", true);
+        $("tbody").append(
+            `
+            <tr>
+                <th class="align-middle" scope="row">
+                    ${response.count}
+                </th>
+                <td class="align-middle">
+                    ${response.created}
+                </td>
+                <td class="align-middle">
+                    <div class="btn btn-danger taskStatus">${response.status}</div>
+                </td>
+                <td>
+                    <a class="btn btn-outline-warning disabled downloadButton" href="#" role="button">Download</a>
+                </td>
+            </tr>
+            `
+        )
+        getTaskStatus(response.task_id);
     })
-    // TODO
+    .fail((err) => {
+        return false;
+    })
 })
 
-// function getTaskStatus(task_id, report_pk) {
-//     $.ajax({
-//         type: "GET",
-//         url: `/reports/tasks/${task_id}/`,
-//         success: (response) => {
-//             const taskStatus = response.task_status;
-//             const taskID = response.task_id
-//             console.log(taskStatus, taskID);
+function getTaskStatus(task_id) {
+    $.ajax({
+        type: "GET",
+        url: `/tasks/${task_id}/`
+    })
+    .done((response) => {
+        const taskStatus = response.task_status;
+        const taskID = response.task_id;
 
-//             if (taskStatus === "SUCCESS") {
-//                 $("#reportGet").attr('action', `/reports/get_report/${report_pk}/`);
-//                 $("#reportGet").closest("form").submit();
+        switch (taskStatus) {
+            case "SUCCESS":
+                console.log("SUCCSESS");
+                $(".taskStatus").last().attr("class", "btn btn-success taskStatus");
+                $(".taskStatus").last().html("Ready");
+                $(".downloadButton").last().attr("class", "btn btn-warning downloadButton");
+                $("#dataSetSubmit").prop("disabled", false);
+                $("#dataSetCreate")[0].reset();
+                break;
 
-//                 $("#reportButton").prop({"disabled": false, "value": "Сформувати звіт"});
-//                 $("#id_model").prop("disabled", false);
-//                 $("#id_hyper").prop("disabled", false);
-//                 $("#datepicker1").prop("disabled", false);
-//                 $("#datepicker2").prop("disabled", false);
-//                 $("#reportForm")[0].reset();
+            case "PENDING":
+                setTimeout(() => {
+                    console.log("PENDING");
+                    getTaskStatus(taskID)
+                }, 1000);
+                break;
 
-//             } else if (taskStatus === "PENDING") {
-//                 setTimeout(() => {
-//                     console.log('report_id', report_pk);
-//                     getTaskStatus(taskID, report_pk)
-//                 }, 1000)
-//             } else {
-//                 return false;
-//             }
-//         },
-//         error: (response) => {
-//             console.log(error);
-//         }
-//     })
-// };
+            default:
+                return false;
+        }
+    })
+    .fail((err) => {
+        console.log(err);
+    })
+}

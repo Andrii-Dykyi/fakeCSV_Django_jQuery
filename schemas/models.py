@@ -23,10 +23,13 @@ class Column(models.Model):
     """Represent schema column in database."""
     COLUMN_TYPES = (
         ('Full name', 'Full name'),
-        ('Job', 'Job'),
+        ('Color', 'Color'),
+        ('City', 'City'),
         ('Company', 'Company'),
-        ('Phone number', 'Phone number'),
-        ('Integer', 'Integer')
+        ('Phone_number', 'Phone number'),
+        ('Integer', 'Integer'),
+        ('Country', 'Country'),
+        ('Month', 'Month')
     )
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100)
