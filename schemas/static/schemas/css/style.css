@@ -13,3 +13,7 @@
 .taskStatus {
     width: 110px;
 }
+
+.loginWrapper {
+    height: 100vh;
+}

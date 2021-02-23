@@ -1,5 +1,6 @@
 from celery.result import AsyncResult
-from django.http import HttpResponseForbidden, JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import FileResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import View
 
@@ -8,56 +9,53 @@ from .models import Column, DataSet, Schema
 from .tasks import form_fake_data
 
 
-class IndexView(View):
+class IndexView(LoginRequiredMixin, View):
     
     def get(self, request):
-        if request.user.is_authenticated:
-            schemas = Schema.objects.filter(confirmed=True)
-            return render(request, 'schemas/index.html', {'schemas': schemas})
-
-        else:
-            return HttpResponseForbidden(status=403)
+        schemas = Schema.objects.filter(confirmed=True)
+        return render(request, 'schemas/index.html', {'schemas': schemas})
 
 
-class CreateSchemaView(View):
+class CreateSchemaView(LoginRequiredMixin, View):
 
     def get(self, request):
-        if request.user.is_authenticated:
-            schema, _ = Schema.objects.get_or_create(owner=request.user, confirmed=False)
-            columns = schema.column_set.all()
-            form, col_form = SchemaCreateForm(instance=schema), ColumnCreateForm()
-            context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
-            return render(request, 'schemas/new_schema.html', context)
+        schema, _ = Schema.objects.get_or_create(owner=request.user, confirmed=False)
+        columns = schema.column_set.all()
+        form, col_form = SchemaCreateForm(instance=schema), ColumnCreateForm()
+        context = {'schema': schema, 'columns': columns, 'form': form, 'col_form': col_form}
+        return render(request, 'schemas/new_schema.html', context)
 
-        else:
-            return HttpResponseForbidden(status=403)
-    
     def post(self, request):
-        if request.user.is_authenticated:
-            form = SchemaCreateForm(data=request.POST)
-            if form.is_valid():
-                schema = Schema.objects.get(owner=request.user, confirmed=False)
-                schema.name = form.cleaned_data['name']
-                schema.confirmed = True
-                schema.save()
-                return redirect(schema)
+        form = SchemaCreateForm(data=request.POST)
 
-        else:
-            return HttpResponseForbidden(status=403)
+        if form.is_valid():
+            schema = Schema.objects.get(owner=request.user, confirmed=False)
+            schema.name = form.cleaned_data['name']
+            schema.confirmed = True
+            schema.save()
+            return redirect(schema)
 
 
-class SchemaView(View):
-
-    def get(self, request, schema_id):
-        if request.user.is_authenticated:
-            schema = get_object_or_404(Schema, pk=schema_id)
-            data_sets = schema.dataset_set.all()
-            form = DataSetCreateForm()
-            context = {'schema': schema, 'data_sets': data_sets, 'form': form}
-            return render(request, 'schemas/schema_detail.html', context)
+class DeleteSchemaView(LoginRequiredMixin, View):
 
     def post(self, request, schema_id):
-        if request.is_ajax() and request.user.is_authenticated:
+        if request.is_ajax():
+            schema = Schema.objects.filter(id=schema_id, owner=request.user)
+            schema.delete()
+            return JsonResponse({'succsess': schema_id}, status=200)
+
+
+class SchemaView(LoginRequiredMixin, View):
+
+    def get(self, request, schema_id):
+        schema = get_object_or_404(Schema, pk=schema_id)
+        data_sets = schema.dataset_set.all()
+        form = DataSetCreateForm()
+        context = {'schema': schema, 'data_sets': data_sets, 'form': form}
+        return render(request, 'schemas/schema_detail.html', context)
+
+    def post(self, request, schema_id):
+        if request.is_ajax():
             schema = Schema.objects.get(id=schema_id)
             form = DataSetCreateForm(data=request.POST)
 
@@ -71,6 +69,7 @@ class SchemaView(View):
                 response = {
                     'task_id': task.id,
                     'count': schema.dataset_set.count(),
+                    'dataset_id': data_set.id,
                     'created': data_set.created,
                     'status': data_set.status
                 }
@@ -81,11 +80,12 @@ class SchemaView(View):
             return HttpResponseForbidden(status=403)
 
 
-class ColumnCreateView(View):
+class ColumnCreateView(LoginRequiredMixin, View):
 
     def post(self, request):
-        if request.is_ajax() and request.user.is_authenticated:
+        if request.is_ajax():
             form = ColumnCreateForm(data=request.POST)
+
             if form.is_valid():
                 column = form.save(commit=False)
                 column.schema_id = request.POST.get('schema')
@@ -104,19 +104,22 @@ class ColumnCreateView(View):
             return HttpResponseForbidden(status=403)
 
 
-class ColumnDeleteView(View):
+class ColumnDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, column_id):
-        if request.is_ajax() and request.user.is_authenticated:
+        if request.is_ajax():
             column = Column.objects.filter(id=column_id)
             column.delete()
             return JsonResponse({'success': column_id}, status=202)
 
+        else:
+            return HttpResponseForbidden(status=403)
 
-class TaskStatusView(View):
+
+class TaskStatusView(LoginRequiredMixin, View):
 
     def get(self, request, task_id):
-        if request.is_ajax() and request.user.is_authenticated:
+        if request.is_ajax():
             task_result = AsyncResult(task_id)
             result = {
                 "task_id": task_id,
@@ -126,3 +129,10 @@ class TaskStatusView(View):
 
         else:
             return HttpResponseForbidden(status=403)
+
+
+class FileDownloadView(LoginRequiredMixin, View):
+
+    def get(self, request, dataset_id):
+        data_set = get_object_or_404(DataSet, id=dataset_id)
+        return FileResponse(open(data_set.file.path, 'rb'))

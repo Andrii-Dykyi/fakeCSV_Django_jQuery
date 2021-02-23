@@ -107,7 +107,9 @@ $("#dataSetCreate").submit(function (e) {
                     <div class="btn btn-danger taskStatus">${response.status}</div>
                 </td>
                 <td>
-                    <a class="btn btn-outline-warning disabled downloadButton" href="#" role="button">Download</a>
+                    <form id="getFile" action="/schema/get_file/${response.dataset_id}/" method="get">
+                        <button class="btn btn-outline-warning disabled downloadButton" type="submit">Download</button>
+                    </form>
                 </td>
             </tr>
             `
@@ -130,7 +132,6 @@ function getTaskStatus(task_id) {
 
         switch (taskStatus) {
             case "SUCCESS":
-                console.log("SUCCSESS");
                 $(".taskStatus").last().attr("class", "btn btn-success taskStatus");
                 $(".taskStatus").last().html("Ready");
                 $(".downloadButton").last().attr("class", "btn btn-warning downloadButton");
@@ -140,7 +141,6 @@ function getTaskStatus(task_id) {
 
             case "PENDING":
                 setTimeout(() => {
-                    console.log("PENDING");
                     getTaskStatus(taskID)
                 }, 1000);
                 break;
@@ -153,3 +153,26 @@ function getTaskStatus(task_id) {
         console.log(err);
     })
 }
+
+$(".deleteSchema").submit(function (e) {
+    e.preventDefault();
+
+    $.ajax({
+        type: "POST",
+        url: `${this.action}`,
+        headers: {
+            "X-CSRFToken": $(this).find("input[name='csrfmiddlewaretoken']").val()
+        }
+    })
+    .done((response) => {
+        $(this).parent().parent().remove();
+
+        let schemaRows = $(".schemaCounter");
+        for (let count = 1; count <= schemaRows.length; count++) {
+            $(schemaRows[count-1]).text(count);
+        }
+    })
+    .fail((err) => {
+        console.log(err);
+    })
+})

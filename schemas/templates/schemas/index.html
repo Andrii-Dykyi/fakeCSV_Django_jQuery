@@ -18,12 +18,15 @@
     <tbody>
         {% for schema in schemas %}
             <tr>
-                <th class="align-middle" scope="row">{{ forloop.counter }}</th>
+                <th class="align-middle schemaCounter" scope="row">{{ forloop.counter }}</th>
                 <td class="align-middle">{{ schema.name }}</td>
                 <td class="align-middle">{{ schema.modified|date:"Y-m-d" }}</td>
                 <td>
-                    <a class="btn btn-primary actionButton" href="{{ schema.get_absolute_url }}" role="button">Edit</a>
-                    <a class="btn btn-danger ms-2 actionButton" href="#" role="button">Delete</a>
+                    <a class="btn btn-primary mb-2 actionButton" href="{{ schema.get_absolute_url }}" role="button">Edit</a>
+                    <form class="deleteSchema" action="{% url 'schemas:delete_schema' schema.pk %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-danger actionButton" type="submit">Delete</button>
+                    </form>
                 </td>
             </tr>
         {% endfor %}

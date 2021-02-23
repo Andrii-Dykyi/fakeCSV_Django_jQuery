@@ -29,27 +29,29 @@
         </tr>
     </thead>
     <tbody>
-        {% for set in data_sets %}
+        {% for data_set in data_sets %}
             <tr>
                 <th class="align-middle" scope="row">
                     {{ forloop.counter }}
                 </th>
                 <td class="align-middle">
-                    {{ set.created|date:"Y-m-d" }}
+                    {{ data_set.created|date:"Y-m-d" }}
                 </td>
                 <td class="align-middle">
-                    {% if set.status == 'Processing' %}
-                        <div class="btn btn-danger taskStatus">{{ set.status }}</div>
+                    {% if data_set.status == 'Processing' %}
+                        <div class="btn btn-danger taskStatus">{{ data_set.status }}</div>
                     {% else %}
-                        <div class="btn btn-success taskStatus">{{ set.status }}</div>
+                        <div class="btn btn-success taskStatus">{{ data_set.status }}</div>
                     {% endif %}
                 </td>
                 <td>
-                    {% if set.status == 'Processing' %}
-                        <a class="btn btn-outline-warning disabled downloadButton" href="#" role="button">Download</a>
-                    {% else %}
-                        <a class="btn btn-warning downloadButton" href="#" role="button">Download</a>
-                    {% endif %}
+                    <form id="getFile" action="{% url 'schemas:get_file' data_set.id %}" method="get">
+                        {% if data_set.status == 'Processing' %}
+                            <button class="btn btn-outline-warning disabled downloadButton" type="submit">Download</button>
+                        {% else %}
+                            <button class="btn btn-warning downloadButton" type="submit">Download</button>
+                        {% endif %}
+                    </form>
                 </td>
             </tr>
         {% endfor %}
