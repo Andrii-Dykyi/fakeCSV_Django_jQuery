@@ -1,0 +1,59 @@
+version: '3.8'
+
+volumes:
+  pgdata:
+  static:
+  media:
+
+services:
+  redis:
+    build: 
+      context: .
+      dockerfile: docker/redis/Dockerfile
+    restart: always
+    ports:
+      - 6380:6380
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  postgres:
+    image: postgres:12.4
+    env_file: ./docker/postgres/db.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+
+  python: &python
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    environment:
+      - DJANGO_SETTINGS_MODULE=FakeCSV.settings
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
+    volumes:
+      - static:/static
+      - media:/media
+    ports:
+      - 8000:8000
+    command: gunicorn -w 4 FakeCSV.wsgi -b 0.0.0.0:8000
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    volumes:
+      - static:/static
+      - media:/media
+    ports:
+      - 8080:80
+
+  celery:
+    <<: *python
+    command: celery -A FakeCSV worker -l INFO
+    ports: []
+    restart: always
+    depends_on:
+      - redis
+      - postgres

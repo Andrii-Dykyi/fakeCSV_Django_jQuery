@@ -6,9 +6,9 @@ click==7.1.2
 click-didyoumean==0.0.3
 click-plugins==1.1.1
 click-repl==0.1.6
-Django==3.1.6
-djangorestframework==3.12.2
-Faker==6.1.1
+Django==3.1.7
+Faker==6.5.0
+gunicorn==20.0.4
 kombu==5.0.2
 prompt-toolkit==3.0.16
 psycopg2-binary==2.8.6

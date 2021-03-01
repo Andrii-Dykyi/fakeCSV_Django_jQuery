@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'yn=nnw^yr&j1y!lqyrx!9b26%pl29)t*p^k4(_u-j)=fxnu_dj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -75,16 +75,28 @@ WSGI_APPLICATION = 'FakeCSV.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "fakeCSV",
-        "USER": "postgres",
-        "PASSWORD": "123456",
-        "HOST": "localhost",
-        "PORT": "5432"
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': "fakeCSV",
+            "USER": "postgres",
+            "PASSWORD": "123456",
+            "HOST": "localhost",
+            "PORT": "5432"
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': "FakeDB",
+            "USER": "FakeUSER",
+            "PASSWORD": "FakePassword",
+            "HOST": "postgres",
+            "PORT": "5432"
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -130,8 +142,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # CELERY & REDIS
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = "redis://localhost:6379/0" if DEBUG else "redis://default:FakeSuperPass@redis:6380/0"
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0' if DEBUG else "redis://default:FakeSuperPass@redis:6380/0"
 CELERY_TIMEZONE = 'Europe/Kiev'
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
