@@ -17,7 +17,7 @@ $("#createColumn").submit(function (e) {
 
     $.ajax({
         type: "POST",
-        url: "/new_column/",
+        url: "/new/column/",
         data: $(this).serialize()
     })
     .done((response) => {
@@ -35,7 +35,7 @@ $("#createColumn").submit(function (e) {
         }
 
         $("#columnRows").append(
-            `<form class="columnRow" action="/new_column/delete/${response.id}/" method="POST">
+            `<form class="columnRow" action="/column/delete/${response.id}/" method="POST">
                 <input type="hidden" name="csrfmiddlewaretoken" value="${response.csrfmiddlewaretoken}">
                 <div class="row mb-3">
                     <div class="col">

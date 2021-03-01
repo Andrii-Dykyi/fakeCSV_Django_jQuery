@@ -1,12 +1,27 @@
 from celery.result import AsyncResult
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.generic import View
 
 from .forms import ColumnCreateForm, DataSetCreateForm, SchemaCreateForm
 from .models import Column, DataSet, Schema
 from .tasks import form_fake_data
+
+
+def register_user(request):
+    if request.method == "GET":
+        return render(request, 'registration/register.html')
+
+    elif request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect(reverse('schemas:index'))
 
 
 class IndexView(LoginRequiredMixin, View):
