@@ -1,3 +1,4 @@
+// Display or not range inputs for columns
 $("#id_type").on("click", () => {
     switch ($("#id_type").val()) {
 
@@ -12,6 +13,8 @@ $("#id_type").on("click", () => {
     }
 });
 
+
+// Sends AJAX request to backend and append new column element to the page
 $("#createColumn").submit(function (e) {
     e.preventDefault();
 
@@ -66,6 +69,7 @@ $("#createColumn").submit(function (e) {
     })
 });
 
+// Send AJAX request for removal column to backend and remove element from the page.
 $("#columnRows").on("submit", ".columnRow", function(e) {
     e.preventDefault();
 
@@ -84,6 +88,7 @@ $("#columnRows").on("submit", ".columnRow", function(e) {
     })
 });
 
+// Send AJAX request to create new dataset and append it to the page.
 $("#dataSetCreate").submit(function (e) {
     e.preventDefault();
 
@@ -121,6 +126,7 @@ $("#dataSetCreate").submit(function (e) {
     })
 })
 
+// Send AJAX request to backend to check CSV file creation task status
 function getTaskStatus(task_id) {
     $.ajax({
         type: "GET",
@@ -154,6 +160,8 @@ function getTaskStatus(task_id) {
     })
 }
 
+
+// Send AJAX request to backend to delete schema and remove it from page.
 $(".deleteSchema").submit(function (e) {
     e.preventDefault();
 

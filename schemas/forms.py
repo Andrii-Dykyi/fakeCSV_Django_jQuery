@@ -3,7 +3,7 @@ from .models import Schema, Column, DataSet
 
 
 class SchemaCreateForm(forms.ModelForm):
-
+    """Schema form."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['name'].widget.attrs.update({'class': 'form-control w-25'})
@@ -15,6 +15,7 @@ class SchemaCreateForm(forms.ModelForm):
 
 
 class ColumnCreateForm(forms.ModelForm):
+    """Column form."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
@@ -26,6 +27,7 @@ class ColumnCreateForm(forms.ModelForm):
 
 
 class DataSetCreateForm(forms.ModelForm):
+    """Dataset form."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['num_row'].widget.attrs.update({'class': 'form-control'})
