@@ -32,7 +32,7 @@ class IndexView(LoginRequiredMixin, View):
     Responsible for index page. Display all user's schemas.
     """
     def get(self, request):
-        schemas = Schema.objects.filter(confirmed=True)
+        schemas = Schema.objects.filter(confirmed=True, owner=request.user)
         return render(request, 'schemas/index.html', {'schemas': schemas})
 
 
@@ -121,7 +121,7 @@ class SchemaView(LoginRequiredMixin, View):
     start Celery task to form CSV file and send json data to front end.
     """
     def get(self, request, schema_id):
-        schema = get_object_or_404(Schema, pk=schema_id)
+        schema = get_object_or_404(Schema, pk=schema_id, owner=request.user)
         data_sets = schema.dataset_set.all()
         form = DataSetCreateForm()
         context = {'schema': schema, 'data_sets': data_sets, 'form': form}
@@ -129,7 +129,7 @@ class SchemaView(LoginRequiredMixin, View):
 
     def post(self, request, schema_id):
         if request.is_ajax():
-            schema = Schema.objects.get(id=schema_id)
+            schema = Schema.objects.get(id=schema_id, owner=request.user)
             form = DataSetCreateForm(data=request.POST)
 
             if form.is_valid():

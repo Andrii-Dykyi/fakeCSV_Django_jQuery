@@ -38,7 +38,6 @@ def form_fake_data(schema_id, dataset_id):
     """
     Form csv file with fake data according to schema column types.
     """
-    time.sleep(10)
     data_set = DataSet.objects.get(pk=dataset_id)
     columns = Column.objects.filter(schema_id=schema_id)
 
