@@ -160,6 +160,13 @@ function getTaskStatus(task_id) {
     })
 }
 
+// Check if almost one column was added
+$("#createSchemaButton").on('click', function (e) {
+    if ($(".columnRow").length === 0) {
+        e.preventDefault()
+    }
+})
+
 
 // Send AJAX request to backend to delete schema and remove it from page.
 $(".deleteSchema").submit(function (e) {

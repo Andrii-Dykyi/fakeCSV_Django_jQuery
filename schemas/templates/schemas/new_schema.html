@@ -11,7 +11,7 @@
     <form action="{% url 'schemas:create_schema' %}" method="POST">
         {% csrf_token %}
         <div class="mb-3 float-end">
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button id="createSchemaButton" type="submit" class="btn btn-primary">Submit</button>
         </div>
         <div>
             {% for field in form %}
