@@ -75,33 +75,21 @@ WSGI_APPLICATION = 'FakeCSV.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': "fakeCSV",
-            "USER": "postgres",
-            "PASSWORD": "123456",
-            "HOST": "localhost",
-            "PORT": "5432"
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('POSTGRES_DB'),
+        "USER": os.getenv('POSTGRES_USER'),
+        "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
+        "HOST": "postgres",
+        "PORT": "5430"
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.getenv('POSTGRES_DB'),
-            "USER": os.getenv('POSTGRES_USER'),
-            "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
-            "HOST": "postgres",
-            "PORT": "5430"
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = []
+AUTH_PASSWORD_VALIDATORS = [] # Turned off
 
 
 # Internationalization
@@ -129,8 +117,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # CELERY & REDIS
-CELERY_BROKER_URL = "redis://localhost:6379/0" if DEBUG else "redis://default:FakeSuperPass@redis:6380/0"
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0' if DEBUG else "redis://default:FakeSuperPass@redis:6380/0"
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 CELERY_TIMEZONE = 'Europe/Kiev'
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"

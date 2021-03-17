@@ -22,7 +22,7 @@
                 <td class="align-middle">{{ schema.name }}</td>
                 <td class="align-middle">{{ schema.modified|date:"Y-m-d" }}</td>
                 <td>
-                    <a class="btn btn-primary mb-2 actionButton" href="{{ schema.get_absolute_url }}" role="button">Edit</a>
+                    <a class="btn btn-primary mb-2 actionButton" href="{{ schema.get_absolute_url }}" role="button">Detail</a>
                     <form class="deleteSchema" action="{% url 'schemas:delete_schema' schema.pk %}" method="post">
                         {% csrf_token %}
                         <button class="btn btn-danger actionButton" type="submit">Delete</button>
