@@ -20,6 +20,7 @@ $ docker-compose build
 $ docker-compose up -d
 $ docker-compose run python bash -c "python3 manage.py migrate"
 ```
+**Go to** http://127.0.0.1:8080
 
 ### Stop:
 ```sh
