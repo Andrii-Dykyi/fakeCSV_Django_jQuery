@@ -1,12 +1,9 @@
 ## Fake CSV Data Generator
 
-> Generate CSV files with fake data.
-
-> Choose number and type of column.
-
-> Choose number of rows.
-
-> Download file.
+- Generate CSV files with fake data.
+- Choose number and type of column.
+- Choose number of rows.
+- Download file.
 
 ### Project Description:
  - Backend: **Python**, **Django3**, **Celery**.
@@ -20,7 +17,7 @@ $ docker-compose build
 $ docker-compose up -d
 $ docker-compose run python bash -c "python3 manage.py migrate"
 ```
-**Go to** http://127.0.0.1:8080
+### Go to http://127.0.0.1:8080
 
 ### Stop:
 ```sh
